@@ -1,0 +1,147 @@
+name: poc-centric-terraform
+
+trigger:
+  branches:
+    include:
+    - '*'
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+  - stage: plan
+    displayName: "Plan and Generate Artifact"
+    variables:
+      - group: ARM
+      - group: Common
+    jobs:
+      - job: plan 
+        displayName: Plan
+        steps:
+          - task: ms-devlabs.custom-terraform-tasks.custom-terraform-release-task.TerraformTaskV2@2
+            displayName: 'Terraform Init'
+            inputs:
+              provider: 'azurerm'
+              workingDirectory: 'terraform/poc'
+              command: init
+              backendServiceArm: 'ado-WDHB-Project-Centric-dev'
+              backendAzureRmResourceGroupName: '$(ARM.ResourceGroup.Poc.Name)'
+              backendAzureRmStorageAccountName: '$(ARM.StorageAccount.Poc.Name)'
+              backendAzureRmContainerName: '$(ARM.StorageAccount.Poc.Container.Name)'
+              backendAzureRmKey: '$(ARM.StorageAccount.Poc.FileName)'
+          - task: ms-devlabs.custom-terraform-tasks.custom-terraform-release-task.TerraformTaskV2@2
+            displayName: 'Terraform Validate'
+            inputs:
+              provider: 'azurerm'
+              workingDirectory: 'terraform/poc'
+              command: validate
+              backendServiceArm: 'ado-WDHB-Project-Centric-dev'
+              backendAzureRmResourceGroupName: '$(ARM.ResourceGroup.Poc.Name)'
+              backendAzureRmStorageAccountName: '$(ARM.StorageAccount.Poc.Name)'
+              backendAzureRmContainerName: '$(ARM.StorageAccount.Poc.Container.Name)'
+              backendAzureRmKey: '$(ARM.StorageAccount.Poc.FileName)'
+          - task: TerraformTaskV2@2
+            displayName: Terraform Plan
+            inputs:
+              provider: 'azurerm'
+              command: 'plan'
+              commandOptions: '-out $(Build.BuildId).tfplan'
+              workingDirectory: 'terraform/poc'
+              environmentServiceNameAzureRM: 'ado-WDHB-Project-Centric-dev'
+          - task: ArchiveFiles@2
+            displayName: 'Archive Terraform Plan Files'
+            inputs:
+              rootFolderOrFile: 'terraform/poc'
+              includeRootFolder: false
+              archiveType: 'tar'
+              tarCompression: 'gz'
+              archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId)-tfplan.tgz'
+              replaceExistingArchive: true     
+          - task: PublishPipelineArtifact@1
+            displayName: 'Publish Terraform Plan Artifact'
+            inputs:
+              targetPath: '$(Build.ArtifactStagingDirectory)'
+              artifactName: '$(Build.BuildId)-tfplan'
+              artifactType: pipeline
+          - script: |
+              cd $(System.DefaultWorkingDirectory)/'terraform/poc'
+              ls -l
+              terraform show -json $(System.DefaultWorkingDirectory)/'terraform/poc'/$(Build.BuildId).tfplan > tf.json
+            displayName: 'Terraform Show'
+          - task: PublishPipelineArtifact@1
+            displayName: 'Publish Terraform Show Artifact'
+            inputs:
+              targetPath: 'terraform/centric/tf.json'
+              artifactName: 'tfshow'
+              artifactType: pipeline
+  - stage: compliance
+    dependsOn: plan
+    displayName: 'Static Code Analysis Stage'
+    jobs:
+      - job: ScanningCodes
+        displayName: 'Run Checkov'
+        steps:
+        - task: DownloadPipelineArtifact@2
+          displayName: 'Download JSON Artifact'
+          inputs:
+            source: current 
+            artifactName: 'tfshow'
+            downloadPath: $(System.DefaultWorkingDirectory)/'terraform/poc'
+        - script: |
+                  mkdir CheckovReport
+                  docker pull bridgecrew/checkov
+                  docker run --volume $(System.DefaultWorkingDirectory)/'terraform/poc':/tf --workdir /tf bridgecrew/checkov --download-external-modules true --skip-check CKV_AZURE_39 --framework terraform_plan --file /tf/tf.json --output junitxml > $(System.DefaultWorkingDirectory)/CheckovReport/Checkov-Report.xml
+          displayName: 'Do Checkov Static Code Analysis'
+        - task: PublishTestResults@2
+          displayName: Publish Checkov Test Results
+          condition: succeededOrFailed()
+          inputs:
+              testResultsFormat: 'JUnit'
+              testResultsFiles: '**/Checkov-Report.xml'
+              searchFolder: '$(System.DefaultWorkingDirectory)/CheckovReport'
+              mergeTestResults: false
+              testRunTitle: Checkov Scan
+              failTaskOnFailedTests: false
+              publishRunAttachments: true
+  - stage: deploy
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    dependsOn: 
+      - plan
+      - compliance
+    displayName: Deploy
+    variables:
+      - group: ARM
+      - group: Common
+    jobs:
+      - job: apply
+        displayName: Deploy Terraform plan
+        steps:
+        - task: DownloadPipelineArtifact@2
+          displayName: 'Download JSON Artifact'
+          inputs:
+            source: current 
+            artifactName: '$(Build.BuildId)-tfplan'
+            downloadPath: $(System.DefaultWorkingDirectory)/Artifact
+        - task: ExtractFiles@1
+          inputs:
+            archiveFilePatterns: 'Artifact/*.tgz' 
+            destinationFolder:  'terraform/poc'
+            overwriteExistingFiles: true
+        - task: ms-devlabs.custom-terraform-tasks.custom-terraform-release-task.TerraformTaskV2@2
+          displayName: 'Terraform Init'
+          inputs:
+              provider: 'azurerm'
+              workingDirectory: 'terraform/poc'
+              command: 'init' 
+              backendServiceArm: 'ado-WDHB-Project-Centric-dev'
+              backendAzureRmResourceGroupName: '$(ARM.ResourceGroup.Poc.Name)'
+              backendAzureRmStorageAccountName: '$(ARM.StorageAccount.Poc.Name)'
+              backendAzureRmContainerName: '$(ARM.StorageAccount.Poc.Container.Name)'
+              backendAzureRmKey: '$(ARM.StorageAccount.Poc.FileName)'
+        - task: TerraformTaskV2@2
+          displayName: 'Terraform Apply'
+          inputs:
+              provider: 'azurerm'
+              command: 'apply'
+              workingDirectory: 'terraform/poc'
+              environmentServiceNameAzureRM: 'ado-WDHB-Project-Centric-dev'
