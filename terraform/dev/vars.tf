@@ -1,7 +1,7 @@
 variable "environment" {
   description = "Type of environment"
   type        = string
-  default     = "poc"
+  default     = "dev"
 }
 
 variable "solution_name" {
