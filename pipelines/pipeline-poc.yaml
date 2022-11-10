@@ -70,7 +70,7 @@ stages:
           - task: PublishPipelineArtifact@1
             displayName: 'Publish Terraform Show Artifact'
             inputs:
-              targetPath: 'terraform/centric/tf.json'
+              targetPath: 'terraform/poc/tf.json'
               artifactName: 'tfshow'
               artifactType: pipeline
   - stage: compliance
