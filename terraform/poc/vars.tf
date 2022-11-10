@@ -47,3 +47,4 @@ variable "gateway_address" {
   type        = string
   default = "10.166.5.4"
 }
+
