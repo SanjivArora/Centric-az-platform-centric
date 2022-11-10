@@ -108,44 +108,44 @@ stages:
               testRunTitle: Checkov Scan
               failTaskOnFailedTests: false
               publishRunAttachments: true
-  # - stage: deploy
-  #   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
-  #   dependsOn: 
-  #     - plan
-  #     - compliance
-  #   displayName: Deploy
-  #   variables:
-  #     - group: ARM
-  #   jobs:
-  #     - job: apply
-  #       displayName: Deploy Terraform plan
-  #       steps:
-  #       - task: DownloadPipelineArtifact@2
-  #         displayName: 'Download JSON Artifact'
-  #         inputs:
-  #           source: current 
-  #           artifactName: '$(Build.BuildId)-tfplan'
-  #           downloadPath: $(System.DefaultWorkingDirectory)/Artifact
-  #       - task: ExtractFiles@1
-  #         inputs:
-  #           archiveFilePatterns: 'Artifact/*.tgz' 
-  #           destinationFolder:  'terraform/poc'
-  #           overwriteExistingFiles: true
-        # - task: ms-devlabs.custom-terraform-tasks.custom-terraform-release-task.TerraformTaskV2@2
-        #   displayName: 'Terraform Init'
-        #   inputs:
-        #       provider: 'azurerm'
-        #       workingDirectory: 'terraform/poc'
-        #       command: 'init' 
-        #       backendServiceArm: 'ado-WDHB-Project-Centric-dev'
-        #       backendAzureRmResourceGroupName: '$(ARM.ResourceGroup.Poc.Name)'
-        #       backendAzureRmStorageAccountName: '$(ARM.StorageAccount.Poc.Name)'
-        #       backendAzureRmContainerName: '$(ARM.StorageAccount.Poc.Container.Name)'
-        #       backendAzureRmKey: '$(ARM.StorageAccount.Poc.FileName)'
-        # - task: TerraformTaskV2@2
-        #   displayName: 'Terraform Apply'
-        #   inputs:
-        #       provider: 'azurerm'
-        #       command: 'apply'
-        #       workingDirectory: 'terraform/poc'
-        #       environmentServiceNameAzureRM: 'ado-WDHB-Project-Centric-dev'
+  - stage: deploy
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    dependsOn: 
+      - plan
+      - compliance
+    displayName: Deploy
+    variables:
+      - group: ARM
+    jobs:
+      - job: apply
+        displayName: Deploy Terraform plan
+        steps:
+        - task: DownloadPipelineArtifact@2
+          displayName: 'Download JSON Artifact'
+          inputs:
+            source: current 
+            artifactName: '$(Build.BuildId)-tfplan'
+            downloadPath: $(System.DefaultWorkingDirectory)/Artifact
+        - task: ExtractFiles@1
+          inputs:
+            archiveFilePatterns: 'Artifact/*.tgz' 
+            destinationFolder:  'terraform/poc'
+            overwriteExistingFiles: true
+        - task: ms-devlabs.custom-terraform-tasks.custom-terraform-release-task.TerraformTaskV2@2
+          displayName: 'Terraform Init'
+          inputs:
+              provider: 'azurerm'
+              workingDirectory: 'terraform/poc'
+              command: 'init' 
+              backendServiceArm: 'ado-WDHB-Project-Centric-dev'
+              backendAzureRmResourceGroupName: '$(ARM.ResourceGroup.Poc.Name)'
+              backendAzureRmStorageAccountName: '$(ARM.StorageAccount.Poc.Name)'
+              backendAzureRmContainerName: '$(ARM.StorageAccount.Poc.Container.Name)'
+              backendAzureRmKey: '$(ARM.StorageAccount.Poc.FileName)'
+        - task: TerraformTaskV2@2
+          displayName: 'Terraform Apply'
+          inputs:
+              provider: 'azurerm'
+              command: 'apply'
+              workingDirectory: 'terraform/poc'
+              environmentServiceNameAzureRM: 'ado-WDHB-Project-Centric-dev'
