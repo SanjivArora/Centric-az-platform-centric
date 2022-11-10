@@ -39,7 +39,7 @@ stages:
             inputs:
               provider: 'azurerm'
               workingDirectory: 'terraform/poc'
-              command: validate
+              command: force-unlock ce362713-d671-a149-954d-b69b9dcca67f
               backendServiceArm: 'ado-WDHB-Project-Centric-dev'
               backendAzureRmResourceGroupName: '$(ARM.ResourceGroup.Poc.Name)'
               backendAzureRmStorageAccountName: '$(ARM.StorageAccount.Poc.Name)'
