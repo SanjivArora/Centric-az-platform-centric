@@ -3,8 +3,13 @@ name: poc-centric-terraform
 trigger:
   branches:
     include:
-    - '*'
-
+    - master
+    - feature/*
+    - release/*
+    - fix/*
+  paths:
+     include:
+     - 'terraform/poc'
 pool:
   vmImage: ubuntu-latest
 
