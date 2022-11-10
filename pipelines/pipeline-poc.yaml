@@ -13,6 +13,7 @@ stages:
     displayName: "Plan and Generate Artifact"
     variables:
       - group: ARM
+      - group: COMMON
     jobs:
       - job: plan 
         displayName: Plan
