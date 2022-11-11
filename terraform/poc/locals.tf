@@ -1,6 +1,6 @@
 locals {
   default_common_tags = {
-    cost-centre     = ""
+    cost-centre     = "12333"
     owner           = "Cloud Services Team"
     business-entity = "WDHB"
     environment     = "Poc"
