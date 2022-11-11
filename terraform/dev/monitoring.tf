@@ -16,6 +16,6 @@ module "monitoring" {
   rg_name                                    = azurerm_resource_group.logging.name
   environment                                = var.environment
   depends_on = [
-    azurerm_resource_group.this_rg,
+    azurerm_resource_group.logging,
   ]
 }
