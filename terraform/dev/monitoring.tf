@@ -1,10 +1,10 @@
 resource "azurerm_resource_group" "logging" {
-  name     = "${var.environment}-${var.solution_name}-networking-rg-${var.location_short_name}-1"
+  name     = "${var.environment}-${var.solution_name}-logging-rg-${var.location_short_name}-1"
   location = var.location
 
   tags = merge(
     var.common_tags, {
-      Name        = "${var.environment}-${var.solution_name}-networking-rg-${var.location_short_name}-1"
+      Name        = "${var.environment}-${var.solution_name}-logging-rg-${var.location_short_name}-1"
     }
   )
 }
