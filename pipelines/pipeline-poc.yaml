@@ -146,6 +146,6 @@ stages:
           displayName: 'Terraform Apply'
           inputs:
               provider: 'azurerm'
-              command: 'destroy'
+              command: 'apply'
               workingDirectory: 'terraform/poc'
               environmentServiceNameAzureRM: 'ado-WDHB-Project-Centric-dev'
