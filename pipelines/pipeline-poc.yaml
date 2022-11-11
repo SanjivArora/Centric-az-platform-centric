@@ -109,7 +109,7 @@ stages:
               failTaskOnFailedTests: false
               publishRunAttachments: true
   - stage: deploy
-    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
     dependsOn: 
       - plan
       - compliance
