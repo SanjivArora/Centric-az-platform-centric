@@ -3,10 +3,6 @@
 
 terraform {
   backend "azurerm" {
-     resource_group_name = "poc-centric-tf-rg-ae-1"
-     storage_account_name = "poccentrictfsaae1"
-     container_name = "poc-centric-tf-blob-ae-1"
-     key    = "poc-centric-project.tfstate"
   }
   required_providers {
     azurerm = {
@@ -20,3 +16,4 @@ provider "azurerm" {
   features {
   }
 }
+
