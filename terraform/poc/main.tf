@@ -3,7 +3,7 @@ resource "azurerm_resource_group" "this_rg" {
   location = var.location
 
   tags = merge(
-    var.common_tags, {
+    local.common_tags, {
       Name        = "${var.environment}-${var.solution_name}-networking-rg-${var.location_short_name}-1"
     }
   )
@@ -12,7 +12,7 @@ resource "azurerm_resource_group" "this_rg" {
 module "vnet" {
     source = "../modules/network"
     resource_group_name = azurerm_resource_group.this_rg.name
-    address_space = ["10.66.138.0/25"]
+    address_space = ["10.166.138.0/25"]
     subnet_prefixes = [
         "10.166.138.0/27", 
         "10.166.138.32/27", 
