@@ -3,7 +3,7 @@ locals {
     cost-centre     = ""
     owner           = "Cloud Services Team"
     business-entity = "WDHB"
-    environment     = "Poc"
+    environment     = "dev"
     security-zone   = "Manage"
     role            = "Infrastructure"
     application     = "Centric"

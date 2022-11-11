@@ -1,10 +1,3 @@
-data "azurerm_subscription" "current" {
-}
-
-data "azurerm_resource_group" "logging" {
-  name = var.rg_name
-}
-
 resource "azurerm_monitor_activity_log_alert" "z-create-update-nsg-alert" {
   description         = "Alert triggered by Create or Update Network Security Group events"
   name                = "z-create-update-nsg-alert"
