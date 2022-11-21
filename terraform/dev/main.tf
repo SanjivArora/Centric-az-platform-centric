@@ -28,7 +28,7 @@ module "vnet" {
     location_short_name = var.location_short_name
     environment = var.environment
     solution_name = var.solution_name
-
+    dns_servers         =["10.166.12.4", "10.166.12.5", "10.167.12.4","10.167.12.5"]
   subnet_delegation = {
     "${var.environment}-${var.solution_name}-app-sn-${var.location_short_name}-1" = {
       "Microsoft.Web.serverFarms" = {
